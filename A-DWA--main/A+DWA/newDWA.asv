@@ -1,0 +1,334 @@
+clc
+clear
+close all; % 关闭所有旧窗口
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                地图建模
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%只能设置正方形矩阵，行和列相等，否则旋转时会出现错误
+MAX0 = [
+    0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 1 1 0 0 1 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0
+    0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0
+    0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0
+    0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 1 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 1 1 1 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 1 0 0 1 1 0 0 0 0
+    0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0
+    0 1 0 0 0 1 1 0 0 0 0 0 1 1 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0
+    0 1 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0
+    1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+    1 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 1 1 1 0 0 0 1 1 0 0 0 0 0 0
+    0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 1 1 0 0
+    0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0
+    0 1 1 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0
+    0 0 0 0 1 1 0 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 1 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0
+    0 0 0 1 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 1 0 0 0 0 0 1 1 0 0
+    0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
+
+%%% 通道设置为 0 ；障碍点设置为 1 ；起始点设置为 2 ；目标点设置为 -1 。
+MAX = rot90(MAX0,3);      %%% 逆时针旋转270度
+MAX_X = size(MAX,2);      %%% 获取列数，即x轴长度
+MAX_Y = size(MAX,1);      %%% 获取行数，即y轴长度
+
+(1)
+axis([1 MAX_X+1, 1 MAX_Y+1])
+%%% 【修改处1】 将刻度间距改为5，避免数字太密集
+set(gca,'xticfigurek',1:4:MAX_X+1,'ytick',1:4:MAX_Y+1,'GridLineStyle','-',... 
+   'xGrid','on','yGrid','on')
+    
+grid on;
+hold on;
+n = 0;
+k = 1;
+CLOSED = [];
+
+% 绘制静态障碍物
+for j=1:MAX_X
+    for i=1:MAX_Y
+        if (MAX(i,j)==1)
+          fill([i,i+1,i+1,i],[j,j,j+1,j+1],'k');  %%% 用黑方块来表示障碍物
+          CLOSED(k,1)=i;
+          CLOSED(k,2)=j; 
+          k=k+1;
+        end
+    end
+end
+Area_MAX(1,1) = MAX_X;
+Area_MAX(1,2) = MAX_Y;
+Obs_Closed = CLOSED;
+num_Closed = size(CLOSED,1);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                       设置起始点和多个目标点
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 设置起始点、目标点
+%%% 选择目标位置
+pause(0.5);
+h=msgbox('请使用鼠标左键选择巡检USV目标位置 (Target)');
+uiwait(h,5);
+if ishandle(h) == 1
+    delete(h);
+end
+xlabel('请使用鼠标左键选择巡检USV目标位置','Color','black');
+but=0;
+while (but ~= 1)
+    [xval,yval,but]=ginput(1);
+end
+xval=floor(xval);
+yval=floor(yval);
+xTarget=xval;
+yTarget=yval;
+plot(xval+.5,yval+.5,'go','MarkerSize',8,'LineWidth',2);
+text(xval+1,yval+1,'Target')
+
+%%% 选择起始位置
+h=msgbox('请选择USV机器人初始起点 (Start)');
+uiwait(h,5);
+if ishandle(h) == 1
+    delete(h);
+end
+xlabel('请使用鼠标左键选择巡检USV初始起点','Color','black');
+but=0;
+while (but ~= 1)
+    [xval,yval,but]=ginput(1);
+    xval=floor(xval);
+    yval=floor(yval);
+end
+xStart=xval;
+yStart=yval;
+plot(xval+.5,yval+.5,'b^','MarkerSize',8,'LineWidth',2);
+text(xval+1,yval+1,'Start')  
+xlabel('起始点位置标记为 △ ，目标点位置标记为 o ','Color','black');
+
+Start=[xStart yStart];
+Goal=[xTarget yTarget];
+
+% A* 全局路径规划
+% 注意：确保当前目录下有 Astar_G_du1.m 文件
+[Line_path,distance_x,OPEN_num]=Astar_G_du1(Obs_Closed,Start,Goal,MAX_X,MAX_Y);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                     局部避障仿真 (DWA)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figure(2)
+axis([1 MAX_X+1, 1 MAX_Y+1])
+%%% 【修改处2】 此处同样修改刻度间距为5
+set(gca,'xtick',1:4:MAX_X+1,'ytick',1:4:MAX_Y+1,'GridLineStyle','-',...
+        'xGrid','on','yGrid','on'); 
+grid on;       
+hold on;
+title('动态窗口法(DWA) 避障仿真');
+
+% 重新绘制障碍物
+num_obc=size(Obs_Closed,1);
+for i_obs=1:1:num_obc
+         x_obs=Obs_Closed(i_obs,1);
+         y_obs=Obs_Closed(i_obs,2);
+         fill([x_obs,x_obs+1,x_obs+1,x_obs],[y_obs,y_obs,y_obs+1,y_obs+1],'k');hold on;
+end
+
+% 绘制全局路径
+plot( Line_path(:,1)+.5, Line_path(:,2)+.5,'b:','linewidth',1.5); 
+plot(xStart+.5,yStart+.5,'b^','MarkerSize',8,'LineWidth',2);
+plot(Goal(1,1)+.5,Goal(1,2)+.5,'go','MarkerSize',8,'LineWidth',2);   
+
+pause(1);
+
+% --- 动态障碍物设置 ---
+h=msgbox('设置移动障碍物的 起点');
+uiwait(h,5);
+if ishandle(h) == 1
+    delete(h);
+end
+xlabel('设置移动障碍物的 起点','Color','black');
+but=0;
+while (but ~= 1)
+    [xval,yval,but]=ginput(1);
+end
+xval=floor(xval);
+yval=floor(yval);
+Obst_xS=xval;
+Obst_yS=yval;
+plot(xval+.5,yval+.5,'k^','MarkerFaceColor','y');
+
+pause(0.5);
+h=msgbox('设置移动障碍物的 终点');
+uiwait(h,5);
+if ishandle(h) == 1
+    delete(h);
+end
+xlabel('设置移动障碍物的 终点 ','Color','black');
+but=0;
+while (but ~= 1)
+    [xval,yval,but]=ginput(1);
+    xval=floor(xval);
+    yval=floor(yval);
+end
+Obst_xT=xval;
+Obst_yT=yval;
+plot(xval+.5,yval+.5,'ko','MarkerFaceColor','y');
+
+Obst_d_d_St=[Obst_xS Obst_yS];
+Obst_d_d_Ta=[Obst_xT Obst_yT];
+% 计算动态障碍物路径
+[Obst_d_path,Obst_d_distance_x,Obst_d_OPEN_num]=Astar_G_du1(Obs_Closed,Obst_d_d_St,Obst_d_d_Ta,MAX_X,MAX_Y);
+Obst_d_path_X=[Obst_d_path;Obst_d_d_Ta];
+
+L_obst=0.026; % 设置移动障碍物的速度
+% 注意：确保有 Line_obst.m
+Obst_d_d_line=Line_obst(Obst_d_path_X,L_obst);
+plot( Obst_d_d_line(:,1)+.5, Obst_d_d_line(:,2)+.5,'r','linewidth',1); 
+
+pause(0.5);
+
+% --- 未知静态障碍物设置 ---
+h=msgbox('设置未知静止障碍物 左键确定后继续设置，右键确定后结束');
+xlabel('设置未知静止障碍物 左键确定后继续设置，右键确定后结束','Color','blue');
+uiwait(h,10);
+if ishandle(h) == 1
+    delete(h);
+end
+but=1;
+while but == 1
+    [xval,yval,but] = ginput(1);
+    if but == 1
+        xval=floor(xval);
+        yval=floor(yval);
+        if xval > 0 && xval <= MAX_X && yval > 0 && yval <= MAX_Y
+            MAX(xval,yval)=8;
+            fill([xval,xval+1,xval+1,xval],[yval,yval,yval+1,yval+1],[0.5 0.5 0.5]); 
+        end
+    end
+end
+
+dg=0;
+Obs_d_j=[0 0];
+for i=1:MAX_X
+    for j=1:MAX_Y
+        if(MAX(i,j) == 8)
+            dg=dg+1;
+            Obs_d_j(dg,1)=i; 
+            Obs_d_j(dg,2)=j; 
+        end
+    end
+end
+
+%% 机器人运动学模型与DWA
+% 机器人初始方向角度 s_du
+angle_node=pi/4;
+% 机器人速度参数
+% Kinematic = [最高速度[m/s], 最高旋转速度[rad/s], 加速度[m/ss], 旋转加速度[rad/ss], 速度分辨率[m/s], 转速分辨率[rad/s]]
+% 注意：需要 toRadian.m
+Kinematic=[1.5, toRadian(20.0), 0.2, toRadian(50.0), 0.02, toRadian(1)];
+
+% 评价函数系数 [方位角, 障碍物距离, 当前速度, 预测时间]
+evalParam=[0.08, 0.3, 0.2, 2.5];
+path_node=Line_path;
+
+% 执行 DWA 算法 (注意：需要 DWA_ct_dong.m)
+Result_x=DWA_ct_dong(Obs_Closed,Obst_d_d_line,Obs_d_j,Area_MAX,Goal,Line_path,path_node,Start,angle_node,Kinematic,evalParam);
+
+%%%%%%%%%%% 绘制结果轨迹
+num_x = size(Result_x, 1);
+Result_plot = [Result_x; Goal(1,1) Goal(1,2) Result_x(num_x,3) 0 0];
+
+figure(2); % 回到地图窗口
+plot(Result_x(:,1)+0.5, Result_x(:,2)+0.5, 'b', 'linewidth', 2); 
+
+% --- 绘制速度曲线 ---
+num_p = num_x + 1;
+ti = 1:1:num_p;
+
+figure(3)
+plot(ti, Result_plot(:,3), '-b');
+legend('姿态角度 (Rad)');
+title('姿态角度变化');
+xlabel('时间步/节点');
+ylabel('角度 (rad)');
+grid on;
+
+figure(4)
+plot(ti, Result_plot(:,4), '-b');
+legend('线速度 (m/s)');
+title('线速度变化');
+xlabel('时间步/节点');
+ylabel('速度 (m/s)');
+grid on;
+
+figure(5)
+plot(ti, Result_plot(:,5), '-r');
+legend('角速度 (rad/s)');
+title('角速度变化');
+xlabel('时间步/节点');
+ylabel('角速度 (rad/s)');
+grid on;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                【新增】 最终数据统计与输出
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fprintf('\n======================== 仿真结果统计 ========================\n');
+
+%% 1. 计算路径总长度 (DWA实际轨迹)
+Total_Distance = 0;
+for i = 1:size(Result_x,1)-1
+    dist_step = sqrt((Result_x(i,1) - Result_x(i+1,1))^2 + (Result_x(i,2) - Result_x(i+1,2))^2);
+    Total_Distance = Total_Distance + dist_step;
+end
+
+%% 2. 计算时间消耗
+% 计算方法：累加 (距离 / 平均速度)
+Total_Time = 0;
+for i = 1:size(Result_x,1)-1
+    dist_step = sqrt((Result_x(i,1) - Result_x(i+1,1))^2 + (Result_x(i,2) - Result_x(i+1,2))^2);
+    v_current = Result_x(i, 4);
+    v_next = Result_x(i+1, 4);
+    v_avg = (v_current + v_next) / 2;
+    
+    if v_avg > 0.001
+        dt = dist_step / v_avg;
+        Total_Time = Total_Time + dt;
+    else
+        % 速度极小时，默认为一个极小时间步长(假设0.1s)
+        Total_Time = Total_Time + 0.1; 
+    end
+end
+
+%% 3. 计算转折次数 (基于A*全局规划路径)
+% 判断全局路径中的拐点
+Turning_Counts = 0;
+if size(Line_path, 1) > 2
+    for k = 2:size(Line_path, 1)-1
+        % 向量 V1: P(k-1) -> P(k)
+        vec1 = Line_path(k,:) - Line_path(k-1,:);
+        % 向量 V2: P(k) -> P(k+1)
+        vec2 = Line_path(k+1,:) - Line_path(k,:);
+        
+        if norm(vec1) > 0 && norm(vec2) > 0
+            % 计算向量夹角的余弦值
+            cos_theta = dot(vec1, vec2) / (norm(vec1) * norm(vec2));
+            % 如果余弦值小于阈值(例如0.99)，说明方向发生了改变
+            if abs(cos_theta) < 0.99 
+                Turning_Counts = Turning_Counts + 1;
+            end
+        end
+    end
+end
+
+%% 4. 在终端打印结果
+fprintf('1. 实际路径总长度 : %.4f m\n', Total_Distance);
+fprintf('2. 估计时间消耗   : %.4f s\n', Total_Time);
+fprintf('3. 全局路径转折数 : %d 次\n', Turning_Counts);
+fprintf('==============================================================\n');
